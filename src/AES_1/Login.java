@@ -1,5 +1,6 @@
 package AES_1;
 
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,6 +33,14 @@ import org.junit.Test;
  * 由于要求用户输入的秘钥长度不定，这里采取md5算法，使用Hash函数处理,接下来将md5得到的一串128位的数据使用AES进行加密
  * 并将加密完毕的数据存储到数据库中 -> 这里可以使用随机数产生一些盐值salt来增强安全性
  *
+ *
+ * 注意！！！
+ * 在md5算法中，将md5生成的byte[]转换为字符串的过程中，存在将十六进制转换错误的问题，如0x02可能被写为2，
+ * 这样就意味着在进行String类型转换将16进制转换的时候存在一定的问题！
+ * 这里采用BigInteger类来解决问题！    -> 构造器中第一个参数填1，为解释；第二个参数将byte[]数组写入
+ * 附：※ 其实MD5生成的即为字节数组，而AES加密的元素也为字节数组，因此甚至可以将md5加密过程之中得到的字节数组直接输出！
+ *        作为AES的明文进行加密！
+ *
  */
 public class Login
 {
@@ -39,8 +48,8 @@ public class Login
     @Test
     public void test()
     {
-        //register();
-        login();
+        register();
+        //login();
     }
 
     public static void register()
@@ -192,7 +201,6 @@ public class Login
         //将word[]转换为String
         String s = wordArrStr(newPlainText);
 
-
         if(input.equals(s))
         {
             System.out.println("登录成功!");
@@ -205,7 +213,7 @@ public class Login
     }
 
     //md5加密算法
-    public static Pair<String,String> md5(String data, String salt) {
+    /*public static Pair<String,String> md5(String data, String salt) {
         StringBuilder sb = new StringBuilder();
         try {
             data += salt;
@@ -221,8 +229,26 @@ public class Login
         }
         String s = sb.toString();
         return new Pair<>(s,salt);
-    }
+    }  */
+    public static Pair<String,String> md5(String data,String salt) {
+        StringBuilder sb = new StringBuilder();
+        BigInteger bigInteger = null;
+        try {
+            data += salt;
+            MessageDigest md = MessageDigest.getInstance("md5");
+            byte[] md5 = md.digest(data.getBytes(StandardCharsets.UTF_8));
 
+            // 将字节数据转换为十六进制 -》 存在严重问题
+            /*for (byte b : md5) {
+                sb.append(Integer.toHexString(b & 0xff));
+            }*/
+            bigInteger = new BigInteger(1,md5);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return new Pair<>(bigInteger.toString(16),salt);
+    }
 
 
     public static word[] toWordArr(byte[] b) {

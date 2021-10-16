@@ -18,6 +18,8 @@ public class Md5UtilSimple {
      * 将数据进行 MD5 加密，并以16进制字符串格式输出
      * @param data
      * @return
+     *
+     * md5算法中字节数组转换为16进制时存在严重问题！
      */
     public static String md5(String data) {
         StringBuilder sb = new StringBuilder();

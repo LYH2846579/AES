@@ -65,9 +65,6 @@ public class AES {
     }
 
 
-
-
-
     //S盒变换
     static word[] ByteSub(word[] state) {
         for (int i = 0; i < Nb; i++)
